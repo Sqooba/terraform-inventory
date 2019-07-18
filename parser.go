@@ -21,8 +21,14 @@ func (s *state) read(stateFile io.Reader) error {
 		return err
 	}
 
+	// when calling terraform-inventory from terraform (i.e. inventory is not fully formed yet),
+	// o: is prefixing the json payload forming the state. I have no idea why yet...
+	// I'm just stripping the chars, expecting a proper start of dict symbol (i.e. {).
+	i := 0
+	for ; i < len(b) && b[i] != '{'; i++ {}
+
 	// parse into struct
-	err = json.Unmarshal(b, s)
+	err = json.Unmarshal(b[i:len(b)], s)
 	if err != nil {
 		return err
 	}
